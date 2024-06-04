@@ -27,8 +27,8 @@ public class AddUserToFirestore : MonoBehaviour
                 db = FirebaseFirestore.DefaultInstance;
                 isFirebaseInitialized = true;
                 Debug.Log("Firebase Initialized");
-                ReadData();  // Read data after initialization
-               // AddUser();
+                // ReadData();  // Read data after initialization
+                AddUser();
             }
             else
             {
@@ -37,8 +37,7 @@ public class AddUserToFirestore : MonoBehaviour
             }
         });
     }
-
-    void ReadData()
+    async void ReadData()
     {
         if (!isFirebaseInitialized)
         {
@@ -46,81 +45,136 @@ public class AddUserToFirestore : MonoBehaviour
             return;
         }
 
-        CollectionReference usersRef = db.Collection("steps");
+        // Specify the collection path to retrieve data from
+        CollectionReference stepsRef = db.Collection("steps");
 
-        usersRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        // Fetch data as a query snapshot
+        QuerySnapshot querySnapshot = await stepsRef.GetSnapshotAsync();
+
+        // Process each document in the snapshot
+        foreach (DocumentSnapshot document in querySnapshot.Documents)
         {
-            if (task.IsCompleted)
+            // Get the document ID for reference
+            string documentId = document.Id;
+
+            // Check if the document exists
+            if (document.Exists)
             {
-                QuerySnapshot snapshot = task.Result;
-                foreach (DocumentSnapshot document in snapshot.Documents)
-                {
-                    // Get the document data as a dictionary
-                    Dictionary<string, object> documentData = document.ToDictionary();
+                // Convert the document data to a dictionary
+                Dictionary<string, object> data = document.ToDictionary();
 
-                    // Custom conversion for StepData with nested DesicionQuestion
-                    StepData stepData = ConvertDocumentToStepData(documentData);
+                // Deserialize the data into your serializable object
+                StepData stepData = JsonConvert.DeserializeObject<StepData>(JsonConvert.SerializeObject(data));
 
-                    if (stepData != null)
-                    {
-                        // Log or use the stepData object here
-                        Debug.Log("Document ID: " + document.Id);
-                        Debug.Log("content_url: " + stepData.content_url);
-                        // ... (log other properties)
-                    }
-                    else
-                    {
-                        Debug.LogError("Failed to convert document data to StepData object.");
-                    }
-                }
+                // Now you have the stepData object with the retrieved data
+                // Use stepData.content_url, stepData.desicionQuestion, etc.
+
+                Debug.Log($"Retrieved data for document ID: {documentId}");
+                Debug.Log($"Content URL: {stepData.content_url}");
+                Debug.Log("questionDesicion id :" + stepData.desicionQuestionID);
+                // ... (Log other properties as needed)
             }
             else
             {
-                Debug.LogError("Error getting documents: + task.Exception");
-            }
-        });
-    }
-    private StepData ConvertDocumentToStepData(Dictionary<string, object> documentData)
-    {
-        if (documentData == null)
-        {
-            return null;
-        }
-
-        StepData stepData = new StepData();
-
-        try
-        {
-            stepData.content_url = documentData["content_url"] as string;
-            stepData.location = documentData["location"] as string;
-            stepData.narriation = documentData["narriation"] as string;
-            stepData.nextStep = null; // Handle as needed
-            stepData.previousStep = null; // Handle as needed
-            stepData.quizId = documentData["quizId"] as string;
-
-            // Handle nested DesicionQuestion
-            if (documentData.ContainsKey("desicionQuestion"))
-            {
-                Dictionary<string, object> desicionQuestionData = documentData["desicionQuestion"] as Dictionary<string, object>;
-                stepData.desicionQuestion = new DesicionQuestion()
-                {
-                    question = desicionQuestionData["question"] as string,
-                    answer1 = desicionQuestionData["answer1"] as string,
-                    answer2 = desicionQuestionData["answer2"] as string,
-                    // Handle nested answer1_stepData and answer2_stepData as needed (might require recursion)
-                    answer1_stepData = null, // Handle as needed
-                    answer2_stepData = null, // Handle as needed
-                };
+                Debug.Log($"Document {documentId} does not exist.");
             }
         }
-        catch (Exception ex)
-        {
-            Debug.LogError("Error converting document data to StepData: " + ex.Message);
-            return null;
-        }
-
-        return stepData;
     }
+
+    //void ReadData()
+    //{
+    //    if (!isFirebaseInitialized)
+    //    {
+    //        Debug.LogError("Firebase is not initialized.");
+    //        return;
+    //    }
+
+    //    CollectionReference usersRef = db.Collection("steps");
+
+    //    usersRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+    //    {
+    //        if (task.IsCompleted)
+    //        {
+    //            QuerySnapshot snapshot = task.Result;
+    //            foreach (DocumentSnapshot document in snapshot.Documents)
+    //            {
+    //                // Get the document data as a dictionary
+    //                Dictionary<string, object> documentData = document.ToDictionary();
+
+    //                // Custom conversion for StepData with nested DesicionQuestion
+    //                StepData stepData = ConvertDocumentToStepData(documentData);
+
+    //                if (stepData != null)
+    //                {
+    //                    // Log or use the stepData object here
+    //                    Debug.Log("Document ID: " + document.Id);
+    //                    Debug.Log("content_url: " + stepData.content_url);
+    //                    Debug.Log("desicionQuestion:" + stepData.desicionQuestion.question);
+    //                    // ... (log other properties)
+    //                }
+    //                else
+    //                {
+    //                    Debug.LogError("Failed to convert document data to StepData object.");
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Debug.LogError("Error getting documents: + task.Exception");
+    //        }
+    //    });
+    //}
+    //private StepData ConvertDocumentToStepData(Dictionary<string, object> documentData)
+    //{
+    //    if (documentData == null)
+    //    {
+    //        return null;
+    //    }
+
+    //    StepData stepData = new StepData();
+
+    //    try
+    //    {
+    //        stepData.content_url = documentData["content_url"] as string;
+    //        stepData.location = documentData["location"] as string;
+    //        stepData.narriation = documentData["narriation"] as string;
+    //        stepData.nextStep = null; // Handle as needed
+    //        stepData.previousStep = null; // Handle as needed
+    //        stepData.quizId = documentData["quizId"] as string;
+
+    //        // Handle nested DesicionQuestion
+    //        if (documentData.ContainsKey("desicionQuestion"))
+    //        {
+    //            Dictionary<string, object> desicionQuestionData = documentData["desicionQuestion"] as Dictionary<string, object>;
+    //            stepData.desicionQuestion = new DesicionQuestion()
+    //            {
+    //                question = desicionQuestionData["question"] as string,
+    //                answer1 = desicionQuestionData["answer1"] as string,
+    //                answer2 = desicionQuestionData["answer2"] as string,
+    //                // Handle nested answer1_stepData and answer2_stepData as needed (might require recursion)
+    //                answer1_stepData = ConvertDocumentToStepDataToNested(desicionQuestionData, "answer1_stepData"),
+    //                answer2_stepData = ConvertDocumentToStepDataToNested(desicionQuestionData, "answer2_stepData"),
+    //            };
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Debug.LogError("Error converting document data to StepData: " + ex.Message);
+    //        return null;
+    //    }
+
+    //    return stepData;
+    //}
+    //private StepData ConvertDocumentToStepDataToNested(Dictionary<string, object> data, string key)
+    //{
+    //    if (!data.ContainsKey(key))
+    //    {
+    //        return null;
+    //    }
+
+    //    Dictionary<string, object> nestedData = data[key] as Dictionary<string, object>;
+    //    return ConvertDocumentToStepData(nestedData);
+    //}
     void AddUser()
     {
         if (!isFirebaseInitialized)
@@ -131,20 +185,14 @@ public class AddUserToFirestore : MonoBehaviour
 
         StepData stepBro = new StepData()
         {
-            content_url = "felan url",
-            desicionQuestion = new DesicionQuestion()
-            {
-                question = "soal 1",
-                answer1 = "javabe 1",
-                answer2 = "javabe 2",
-                answer1_stepData = null,
-                answer2_stepData = null
-            },
-            location = "otaghe MRI",
-            narriation = "guyande text",
-            nextStep = null,
-            previousStep = null,
-            quizId = "2"
+            content_url = "previous url",
+            desicionQuestionID = "8O18tDN7cYulfqzcgizZ",
+
+            location = "edare jandarmeri",
+            narriation = "nafas zaban",
+            nextStepID = "",
+            previousStepID = "",
+            quizId = "4"
         };
         var jsonData = JsonUtility.ToJson(stepBro);
 
@@ -195,11 +243,11 @@ public class AddUserToFirestore : MonoBehaviour
 public class StepData
 {
     public string content_url;
-    public DesicionQuestion desicionQuestion;
+    public string desicionQuestionID;
     public string location;
     public string narriation;
-    public StepData nextStep;
-    public StepData previousStep;
+    public string nextStepID;
+    public string previousStepID;
     public string quizId;
 
 }
@@ -210,7 +258,7 @@ public class DesicionQuestion
     public string question;
     public string answer1;
     public string answer2;
-    public StepData answer1_stepData;
-    public StepData answer2_stepData;
+    public string answer1_stepDataID;
+    public string answer2_stepDataID;
 
 }
