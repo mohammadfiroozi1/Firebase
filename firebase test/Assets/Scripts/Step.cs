@@ -1,17 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using TMPro;
+public enum ContentType
+{
+    image, video, audio, model, pdf
+}
 public class Step : MonoBehaviour
 {
-    public List<StepTask> tasks = new List<StepTask>();
+    [Header("Content Options")]
+    public GameObject imagePanel, videoPanel, audioPanel, modelPanel, pdfPanel;
+    public RawImage rawImage;
+    public AudioClip audioClip;
+    public GameObject pdf;
+    public GameObject model;
 
-    public async void Dotasks()
-    {
-        foreach (var stepTask in tasks)
-        {
-            await stepTask.DoTask();
+    [Space]
+    public string narriation;
+    public Step nextStep;
+    public Step previousStep;
 
-        }
-    }
 }
