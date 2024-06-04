@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "249068384926",
+    "project_id": "embodyxr-7d310",
+    "storage_bucket": "embodyxr-7d310.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249068384926:android:abc1e47e4f173a4a45018f",
+        "android_client_info": {
+          "package_name": "com.EmbodyXR.Embody_VR"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcdlBAGkKdgFHv9fEsM6yP316gGi7Gl18"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
